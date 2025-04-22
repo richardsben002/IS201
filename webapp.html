@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Wordle</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+      background: linear-gradient(145deg, #0d0d0d, #1a1a1a);
+      color: goldenrod;
+    }
+    .row {
+      display: flex;
+      justify-content: center;
+      margin: 5px;
+    }
+    .tile {
+  width: 50px;
+  height: 50px;
+  border: 2px solid #555;
+  margin: 2px;
+  font-size: 24px;
+  text-transform: uppercase;
+  line-height: 50px;
+  font-weight: bold;
+  background-color: #1f2328;
+  color: white;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+    .flip {
+      animation: flip 0.6s forwards;
+    }
+
+    @keyframes flip {
+      0% {
+        transform: rotateX(0deg);
+      }
+      50% {
+        transform: rotateX(90deg);
+        background-color: white;
+      }
+      100% {
+        transform: rotateX(0deg);
+      }
+    }
+
+    .correct {
+      background-color: green;
+      color: white;
+      border: none;
+    }
+    .close {
+      background-color: orange;
+      color: white;
+      border: none;
+    }
+    .wrong {
+      background-color: grey;
+      color: white;
+      border: none;
+    }
+    input {
+      margin-top: 20px;
+      font-size: 20px;
+      padding: 10px;
+      text-transform: uppercase;
+    }
+    #resetBtn {
+      display: none;
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Custom Wordle</h1>
+  <div id="board"></div>
+  <input type="text" id="guessInput" maxlength="5" placeholder="Type your guess" autofocus />
+  <br>
+  <button id="resetBtn">Play Again</button>
+
+  <script>
+    const wordList = [
+      "BRAVE", "CHILD", "STONE", "PLANE", "LIGHT", "MIGHT", "TIGER", "SUGAR", "PRIDE", "CLEAN",
+      "CLOUD", "CRISP", "DOING", "FLASH", "GRIND", "HONEY", "JUMBO", "KNIFE", "LEMON", "MOVER"
+    ];
+
+    let secretWord, attempts;
+    const maxAttempts = 6;
+    const board = document.getElementById('board');
+    const input = document.getElementById('guessInput');
+    const resetBtn = document.getElementById('resetBtn');
+
+    function startGame() {
+      secretWord = wordList[Math.floor(Math.random() * wordList.length)];
+      attempts = 0;
+      board.innerHTML = '';
+      input.disabled = false;
+      input.value = '';
+      resetBtn.style.display = 'none';
+      input.focus();
+    }
+
+    function revealTiles(row, guess) {
+      const tiles = row.children;
+      for (let i = 0; i < tiles.length; i++) {
+        const tile = tiles[i];
+        setTimeout(() => {
+          tile.classList.add('flip');
+          setTimeout(() => {
+            tile.classList.remove('flip');
+            if (guess[i] === secretWord[i]) {
+              tile.classList.add('correct');
+            } else if (secretWord.includes(guess[i])) {
+              tile.classList.add('close');
+            } else {
+              tile.classList.add('wrong');
+            }
+          }, 300); // halfway through flip
+        }, i * 300); // stagger each tile
+      }
+    }
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        const guess = input.value.toUpperCase();
+        if (guess.length !== 5) {
+          alert("Guess must be 5 letters!");
+          return;
+        }
+
+        if (attempts >= maxAttempts) {
+          alert("No more attempts!");
+          return;
+        }
+
+        const row = document.createElement('div');
+        row.className = 'row';
+
+        for (let i = 0; i < 5; i++) {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          tile.textContent = guess[i];
+          row.appendChild(tile);
+        }
+
+        board.appendChild(row);
+        revealTiles(row, guess);
+
+        attempts++;
+        input.value = "";
+
+        setTimeout(() => {
+          if (guess === secretWord) {
+            alert("🎉 You guessed it!");
+            input.disabled = true;
+            resetBtn.style.display = 'inline-block';
+          } else if (attempts === maxAttempts) {
+            alert("❌ Game over! The word was: " + secretWord);
+            input.disabled = true;
+            resetBtn.style.display = 'inline-block';
+          }
+        }, 5 * 300 + 500); // wait until all tiles flip
+      }
+    });
+
+    resetBtn.addEventListener('click', startGame);
+
+    startGame();
+  </script>
+  <br><br>
+    <a href="scratch.html" style="padding: 8px 12px; background-color: goldenrod; color: black; text-decoration: none; border-radius: 5px;">← Go Home</a>
+
+</body>
+</html>
